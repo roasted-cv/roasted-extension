@@ -1,0 +1,27 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "typecheck": "tsc --noEmit",
+    "prepare": "wxt prepare",
+    "build:e2e": "wxt build -m e2e",
+    "e2e": "wxt build -m e2e && node e2e/copy-jd.test.mjs"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "@roasted/extractor": "workspace:*"
+  },
+  "devDependencies": {
+    "cloakbrowser": "^0.3.31",
+    "typescript": "^5.7.0",
+    "wxt": "^0.20.0"
+  }
+}

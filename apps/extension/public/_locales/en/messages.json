@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Roasted.cv - Copy job description"
+  },
+  "extDescription": {
+    "message": "Right-click on any career page, hit Copy JD, get a clean plain-text job description in your clipboard. Local, no AI, no tracking."
+  },
+  "copyJd": {
+    "message": "Copy JD"
+  },
+  "copied": {
+    "message": "Job description copied"
+  },
+  "notFound": {
+    "message": "Couldn't find a job description on this page"
+  }
+}

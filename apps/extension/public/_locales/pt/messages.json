@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Roasted.cv - Copy job description"
+  },
+  "extDescription": {
+    "message": "Clique direito em uma página de vaga, escolha Copy JD e veja a descrição em texto limpo no clipboard. Local, sem IA, sem tracking."
+  },
+  "copyJd": {
+    "message": "Copiar vaga"
+  },
+  "copied": {
+    "message": "Descrição da vaga copiada"
+  },
+  "notFound": {
+    "message": "Não foi possível encontrar uma descrição de vaga nesta página"
+  }
+}

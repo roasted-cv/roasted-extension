@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Roasted.cv - Copy job description"
+  },
+  "extDescription": {
+    "message": "Clic droit sur une page d'offre, choisissez Copy JD et obtenez la description en texte brut dans votre presse-papiers. Local, sans IA, sans tracking."
+  },
+  "copyJd": {
+    "message": "Copier l'offre"
+  },
+  "copied": {
+    "message": "Description copiée"
+  },
+  "notFound": {
+    "message": "Aucune description trouvée sur cette page"
+  }
+}

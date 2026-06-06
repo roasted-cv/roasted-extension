@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Roasted.cv - Copy job description"
+  },
+  "extDescription": {
+    "message": "Правый клик на странице вакансии, Copy JD, и чистый текст вакансии в буфере. Локально, без AI, без трекинга."
+  },
+  "copyJd": {
+    "message": "Копировать вакансию"
+  },
+  "copied": {
+    "message": "Описание вакансии скопировано"
+  },
+  "notFound": {
+    "message": "Не нашли описание вакансии на этой странице"
+  }
+}

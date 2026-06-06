@@ -1,0 +1,17 @@
+{
+  "extName": {
+    "message": "Roasted.cv - Copy job description"
+  },
+  "extDescription": {
+    "message": "Rechtsklick auf einer Stellenseite, Copy JD wählen und die saubere Beschreibung als Text in der Zwischenablage. Lokal, ohne KI, ohne Tracking."
+  },
+  "copyJd": {
+    "message": "JD kopieren"
+  },
+  "copied": {
+    "message": "Stellenbeschreibung kopiert"
+  },
+  "notFound": {
+    "message": "Keine Stellenbeschreibung auf dieser Seite gefunden"
+  }
+}
