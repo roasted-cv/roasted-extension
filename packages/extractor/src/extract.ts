@@ -1,4 +1,5 @@
 import { jsonLdJobDescription } from "./jsonld";
+import { withHeader } from "./meta";
 import { readabilityText } from "./readability";
 import { matchSite } from "./sites";
 import { htmlToText } from "./text";
@@ -34,7 +35,7 @@ export async function extract(doc: Document, options: ExtractOptions = {}): Prom
       try {
         const json = await options.fetchJson(apiUrl);
         const text = htmlToText(site.api.pick(json), doc);
-        if (text.length >= minLength) return { ok: true, tier: "site-api", text };
+        if (text.length >= minLength) return { ok: true, tier: "site-api", text: withHeader(text, doc, site) };
       } catch {}
     }
   }
@@ -49,12 +50,14 @@ export async function extract(doc: Document, options: ExtractOptions = {}): Prom
     const element = doc.querySelector(selector);
     if (element) {
       const text = htmlToText(element, doc);
-      if (text.length >= minLength) return { ok: true, tier: "site-dom", text };
+      if (text.length >= minLength) return { ok: true, tier: "site-dom", text: withHeader(text, doc, site) };
     }
   }
 
-  const readable = readabilityText(doc);
-  if (readable.length >= minLength) return { ok: true, tier: "readability", text: readable };
+  if (!site?.disableReadability) {
+    const readable = readabilityText(doc);
+    if (readable.length >= minLength) return { ok: true, tier: "readability", text: readable };
+  }
 
   return { ok: false, tier: "none", text: "" };
 }

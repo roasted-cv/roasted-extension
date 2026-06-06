@@ -60,6 +60,62 @@ describe("site-dom selectors", () => {
     expect(result.tier).toBe("site-dom");
     expect(result.text).toContain("Payments team");
   });
+
+  it("copies the JD from a LinkedIn guest job page", async () => {
+    const doc = loadDoc("linkedin-guest.html", "https://www.linkedin.com/jobs/view/4406118990/");
+    const result = await extract(doc);
+    expect(result.tier).toBe("site-dom");
+    expect(result.text).toContain("Software Engineer");
+    expect(result.text).toContain("- Ship product surfaces");
+    // The sidebar empty-state prompt must never leak into the JD.
+    expect(result.text).not.toContain("Start a search and we'll share opportunities");
+  });
+
+  it("prepends title + company + location on a LinkedIn guest page", async () => {
+    const doc = loadDoc("linkedin-guest.html", "https://www.linkedin.com/jobs/view/4406118990/");
+    const result = await extract(doc);
+    expect(result.text.startsWith("Software Engineer, New Grad")).toBe(true);
+    expect(result.text).toContain("Notion · San Francisco, CA");
+    // Header sits above the body.
+    expect(result.text.indexOf("Notion")).toBeLessThan(result.text.indexOf("Who We Are"));
+  });
+
+  it("copies #job-details from the logged-in LinkedIn jobs UI", async () => {
+    const doc = loadDoc(
+      "linkedin-auth.html",
+      "https://www.linkedin.com/jobs/search/?currentJobId=12345",
+    );
+    const result = await extract(doc);
+    expect(result.tier).toBe("site-dom");
+    expect(result.text).toContain("Senior Backend Engineer");
+    expect(result.text).toContain("- Own services in Go and Postgres");
+    expect(result.text).not.toContain("Search for jobs");
+  });
+
+  it("prepends title + company + clean location on the authed LinkedIn UI", async () => {
+    const doc = loadDoc(
+      "linkedin-auth.html",
+      "https://www.linkedin.com/jobs/search/?currentJobId=12345",
+    );
+    const result = await extract(doc);
+    expect(result.text.startsWith("Senior Backend Engineer")).toBe(true);
+    expect(result.text).toContain("Acme Corp · San Francisco, CA · 2 weeks ago");
+    // Title appears once (header only), and the body still follows it.
+    expect(result.text.indexOf("About the role")).toBeGreaterThan(result.text.indexOf("Acme Corp"));
+    // Applicant/social noise from the meta line is stripped.
+    expect(result.text).not.toContain("87 people clicked apply");
+    expect(result.text).not.toContain("managed off LinkedIn");
+  });
+});
+
+describe("linkedin readability guard", () => {
+  it("reports failure on a LinkedIn page with no JD instead of copying the sidebar prompt", async () => {
+    const doc = loadDoc("linkedin-empty.html", "https://www.linkedin.com/jobs/");
+    const result = await extract(doc);
+    expect(result.ok).toBe(false);
+    expect(result.tier).toBe("none");
+    expect(result.text).toBe("");
+  });
 });
 
 describe("readability fallback", () => {

@@ -1,16 +1,19 @@
-import { extract } from "@roasted/extractor";
+import { extract, type ExtractResult } from "@roasted/extractor";
+
+// LinkedIn (and a few other modern SPA career pages) renders the job posting
+// shell first, then fetches the actual job description over XHR/RPC. If the
+// user right-clicks Copy JD between those two events the first extract pass
+// finds an empty container and we'd show "Couldn't find a job description"
+// even though it's about to appear. Retry briefly with a small budget so the
+// usual path stays instant for ready pages but slow async loaders still win.
+const RETRY_BUDGET_MS = 1500;
+const RETRY_STEP_MS = 200;
 
 export default defineContentScript({
   registration: "runtime",
   async main() {
     const selection = window.getSelection()?.toString() ?? "";
-    const result = await extract(document, {
-      selection,
-      fetchJson: (url) =>
-        fetch(url, { headers: { Accept: "application/json" }, credentials: "include" }).then((response) =>
-          response.json(),
-        ),
-    });
+    const result = await extractWithRetry(selection);
 
     if (!result.ok || !result.text) {
       toast(message("notFound", "Couldn't find a job description on this page"), true);
@@ -27,6 +30,56 @@ export default defineContentScript({
     return { ok: copied, tier: result.tier, length: result.text.length };
   },
 });
+
+async function extractWithRetry(selection: string): Promise<ExtractResult> {
+  const options = {
+    selection,
+    fetchJson: (url: string) =>
+      fetch(url, { headers: { Accept: "application/json" }, credentials: "include" }).then(
+        (response) => response.json(),
+      ),
+  };
+  const first = await extract(document, options);
+  // A user selection always wins instantly; never burn retry budget for it.
+  if (first.ok || selection.trim().length > 0) return first;
+
+  // LinkedIn injects the job description after an XHR resolves, so watch for
+  // DOM mutations and re-extract when the page changes. Mutations are debounced
+  // by RETRY_STEP_MS to coalesce SPA churn into at most one extract per step,
+  // and a hard RETRY_BUDGET_MS timeout bounds the wait so a truly empty page
+  // still resolves to the "not found" toast.
+  return new Promise<ExtractResult>((resolve) => {
+    let last = first;
+    let settled = false;
+    let pending = false;
+    let stepTimer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (result: ExtractResult) => {
+      if (settled) return;
+      settled = true;
+      observer.disconnect();
+      clearTimeout(stepTimer);
+      clearTimeout(budgetTimer);
+      resolve(result);
+    };
+    const tryExtract = async () => {
+      if (settled || pending) return;
+      pending = true;
+      try {
+        last = await extract(document, options);
+        if (last.ok) finish(last);
+      } finally {
+        pending = false;
+      }
+    };
+    const observer = new MutationObserver(() => {
+      if (settled) return;
+      clearTimeout(stepTimer);
+      stepTimer = setTimeout(() => void tryExtract(), RETRY_STEP_MS);
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    const budgetTimer = setTimeout(() => finish(last), RETRY_BUDGET_MS);
+  });
+}
 
 async function copyText(text: string): Promise<boolean> {
   try {
